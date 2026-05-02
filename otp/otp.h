@@ -19,13 +19,15 @@ public:
     explicit OTP(QObject *parent = nullptr, ConfigManager *configman = nullptr);
     ~OTP();
 
-    void sendMessage(QString recepient);
+    void sendMessage(QString recepientEmail);
 
     QString generateCode();
 
     void deleteCode();
 
     bool otpCodeAccepted(QString userEnteredCode);
+
+    QString getCode() const;
 
 private:
 

@@ -40,9 +40,10 @@ void DatabaseDriver::setConnection() {
  */
 bool DatabaseDriver::userExists(const QString& userLogin, const QString& userPassword) {
 
+    bool loginValid = false, passwordValid = false;
+
     if (!databaseObj.isOpen() && !databaseObj.isValid()) {
 
-        //qdebug:: something
         return false;
 
     }
@@ -59,8 +60,9 @@ bool DatabaseDriver::userExists(const QString& userLogin, const QString& userPas
     if (query.exec() && query.next()) {
 
 
-        qDebug() << "User exists";
-        return true;
+        qDebug() << "User exists: login ok";
+        /*return true;*/
+        loginValid = true;
 
     }
 
@@ -70,6 +72,24 @@ bool DatabaseDriver::userExists(const QString& userLogin, const QString& userPas
         return false;
 
     };
+
+    // checking user's password
+    query.prepare("SELECT user_password FROM users WHERE user_login = :user_login_requested");
+    query.bindValue(":user_login_requested", userLogin);
+
+    if (query.exec() && query.next() && loginValid) {
+
+        if(query.value(0) == userPassword) {
+
+            qDebug() << "User exists: password ok";
+            passwordValid = true;
+            return true;
+
+        }
+
+    }
+
+    return false;
 
 }
 

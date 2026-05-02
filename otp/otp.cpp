@@ -3,7 +3,7 @@
 /**
  * @brief OTP::OTP
  */
-OTP::OTP(QObject *parent, ConfigManager *configman) : QObject(parent) {
+OTP::OTP(QObject *parent, ConfigManager *configman) : QObject(parent), otpCode("") {
 
     this -> configman = configman;
 
@@ -111,5 +111,11 @@ bool OTP::otpCodeAccepted(QString userEnteredCode) {
         return true;
 
     return false;
+
+}
+
+QString OTP::getCode() const {
+
+    return this -> otpCode;
 
 }

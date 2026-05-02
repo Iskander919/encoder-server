@@ -13,7 +13,9 @@
 
 #include <memory>
 
-void initDatabase(DatabaseDriver *databaseDriver, ConfigManager *configManager, QObject &parent);
+// decalring function prototypes
+std::shared_ptr<DatabaseDriver> initDatabase(ConfigManager *configManager, QObject &parent);
+std::shared_ptr<OTP> initOtp(ConfigManager *configManager, QObject &parent);
 
 int main(int argc, char *argv[])
 {
@@ -25,10 +27,10 @@ int main(int argc, char *argv[])
     ConfigManager *configManager = new ConfigManager("config.ini", &a);
 
     // init database driver with settings from configManager
-    DatabaseDriver *databaseDriver = nullptr;
-    initDatabase(databaseDriver, configManager, a);
+    std::shared_ptr<DatabaseDriver> databaseDriver = initDatabase(configManager, a);
 
-    // OTP *otpManager = new OTP(&a);
+    // init OTP sender
+    std::shared_ptr<OTP> otpDriver = initOtp(configManager, a);
 
     // setup HTTP server
     QHttpServer httpServer;
@@ -41,16 +43,40 @@ int main(int argc, char *argv[])
 
     });
 
-    // register new user route
-    httpServer.route("/users", QHttpServerRequest::Method::Post, [](){
+    // register route that sends
+    httpServer.route("/send_code", QHttpServerRequest::Method::Post, [otpDriver]
+                     (const QHttpServerRequest &request){
 
-        return "Yp";
+        if(otpDriver == nullptr)
+            return QHttpServerResponse("Internal error: null", QHttpServerResponder::StatusCode::InternalServerError);
+
+        // getting json body from the request
+        const auto jsonBodyDoc = QJsonDocument::fromJson(request.body());
+
+        // checking if jsonBodyDoc is appropriate json document
+        if(!jsonBodyDoc.isObject()) {
+
+            return QHttpServerResponse("Invalid json");
+
+        }
+
+        const QJsonObject jsonObj = jsonBodyDoc.object();
+
+        // getiing values from json body
+        const QString email = jsonObj.value("login").toString();
+
+        otpDriver -> sendMessage(email);
+
+        // all good. Return json with OTP code
+        QJsonObject otpJson;
+        otpJson["code"] = otpDriver -> getCode();
+        return QHttpServerResponse(QJsonDocument(otpJson).toJson(QJsonDocument::Compact));
 
     });
 
     // checking existence of the user route
     httpServer.route("/login", QHttpServerRequest::Method::Post,
-                     [&databaseDriver](const QHttpServerRequest &request) {
+                     [databaseDriver](const QHttpServerRequest &request) {
 
         // getting json body from the request
         const auto jsonBodyDoc = QJsonDocument::fromJson(request.body());
@@ -67,9 +93,28 @@ int main(int argc, char *argv[])
         // getiing values from json body
         const QString loginToCheck = jsonObj.value("login").toString();
         const QString passwordToCheck = jsonObj.value("password").toString();
+        if(databaseDriver == nullptr) {
 
+            return QHttpServerResponse("Internal error: null", QHttpServerResponder::StatusCode::Forbidden);
 
-        /*return "Yo";*/
+        }
+
+        // health check of database
+        if(!databaseDriver -> connectionOk) {
+
+            return QHttpServerResponse("Inernal error: lost DB connection", QHttpServerResponder::StatusCode::Forbidden);
+
+        }
+
+        // checking if this user exists in database
+        if (!databaseDriver -> userExists(loginToCheck, passwordToCheck)) {
+
+            return QHttpServerResponse("Invalid user", QHttpServerResponder::StatusCode::Forbidden);
+
+        }
+
+        // authorized succesfully: return "Valid"
+        return QHttpServerResponse("Valid", QHttpServerResponder::StatusCode::Ok);
 
     });
 
@@ -90,14 +135,14 @@ int main(int argc, char *argv[])
 
 /**
  * @brief initDatabase
- * @param databaseDriver
  * @param configManager
  * @param parent
+ * @return databaseDriver
  */
-void initDatabase(DatabaseDriver *databaseDriver, ConfigManager *configManager, QObject &parent) {
+std::shared_ptr<DatabaseDriver> initDatabase(ConfigManager *configManager, QObject &parent) {
 
     // establish a database connection
-    databaseDriver = new DatabaseDriver(
+    std::shared_ptr<DatabaseDriver> databaseDriver = std::make_shared<DatabaseDriver>(
         configManager -> getDatabaseName(),
         configManager -> getDatabaseHostname(),
         configManager -> getDatabaseUsername(),
@@ -106,6 +151,22 @@ void initDatabase(DatabaseDriver *databaseDriver, ConfigManager *configManager, 
 
     databaseDriver -> setConnection();
     qDebug() << "db connection status: " << databaseDriver -> connectionOk;
+
+    return databaseDriver;
+
+}
+
+/**
+ * @brief initOtp
+ * @param configManager
+ * @param parent
+ * @return otpDriver
+ */
+std::shared_ptr<OTP> initOtp(ConfigManager *configManager, QObject &parent) {
+
+    std::shared_ptr<OTP> otpDriver = std::make_shared<OTP>(&parent, configManager);
+
+    return otpDriver;
 
 }
 

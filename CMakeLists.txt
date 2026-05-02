@@ -19,8 +19,11 @@ add_subdirectory(external/simple-mail)
 add_executable(security-server
   main.cpp
   database/dbdriver.cpp
+  database/dbdriver.h
   configmanager/configmanager.cpp
+  configmanager/configmanager.h
   otp/otp.cpp
+  otp/otp.h
 
 )
 target_link_libraries(security-server PRIVATE Qt${QT_VERSION_MAJOR}::Core)

@@ -13,6 +13,6 @@ your account and deleting your account, ecnryption and decryption of your text
 ## Installation guide ## 
 1. Clone this repo: ```git clone https://github.com/Iskander919/encoder-server.git```
 2. Create a Docker image of this app: go to the root directory of the project and execute\
-```docker-compose build```
+```docker-compose build```\
 ```docker-compose up```
 3. Now you can send requests on localhost:8080

@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS HttpServer)
 find_package(Qt6 REQUIRED COMPONENTS Sql)
 
@@ -26,7 +26,7 @@ add_executable(security-server
   otp/otp.h
 
 )
-target_link_libraries(security-server PRIVATE Qt${QT_VERSION_MAJOR}::Core)
+target_link_libraries(security-server PRIVATE Qt6::Core)
 target_link_libraries(security-server PRIVATE Qt6::HttpServer)
 target_link_libraries(security-server PRIVATE Qt6::Sql)
 target_link_libraries(security-server PRIVATE SimpleMail::Core)

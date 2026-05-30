@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  db: # настройка postgres
+    image: postgres:15-alpine
+    container_name: postgres # имя контейнера, который представлен сервисом
+    restart: always          # всегда делать restart при падении
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: eternal_islander19
+    ports: ["5432:5432"]
+    volumes:                 # сохранение данных БД
+        - pgdata:/var/lib/postgresql/data
+
+  server: # настройка сервера
+    build: . 			   # собираем из Dockerfile в текущей папке
+    command: ./build/security-server   # команда для сборки
+    ports:   ["8080:8080"]
+    volumes:			   # для файла config.ini
+        - ./config.ini:/app/build/config.ini #[путь на хосте:путь в контейнере]
+        - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+    pgdata:

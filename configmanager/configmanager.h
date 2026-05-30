@@ -4,7 +4,7 @@
 #define SETTINGS_PATH "../../config/config.ini"
 
 #include <QSettings>
-#include <QFIle>
+#include <QFile>
 
 class ConfigManager : public QObject {
 

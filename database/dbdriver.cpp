@@ -29,6 +29,21 @@ DatabaseDriver::DatabaseDriver (QString dbName,
 void DatabaseDriver::setConnection() {
 
     this -> connectionOk = databaseObj.open();
+    if(!connectionOk) {
+
+        qDebug() << "Failed to connect to database. Retry...";
+
+        for(int i = 1; i < 5; i++) {
+
+            qDebug() << "Attempt: " << i;
+            QThread::sleep(3);
+            this -> connectionOk = databaseObj.open();
+
+            if(this -> connectionOk == true) break;
+
+        }
+
+    }
 
 }
 

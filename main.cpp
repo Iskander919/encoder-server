@@ -13,7 +13,7 @@
 
 #include <memory>
 
-// decalring function prototypes
+// declaring function prototypes
 std::shared_ptr<DatabaseDriver> initDatabase(ConfigManager *configManager, QObject &parent);
 std::shared_ptr<OTP> initOtp(ConfigManager *configManager, QObject &parent);
 
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
         // all good. Return json with OTP code
         QJsonObject otpJson;
         otpJson["code"] = otpDriver -> getCode();
-        return QHttpServerResponse(QJsonDocument(otpJson).toJson(QJsonDocument::Compact));
+        return QHttpServerResponse("application/json", QJsonDocument(otpJson).toJson(QJsonDocument::Compact), QHttpServerResponder::StatusCode::Ok);
 
     });
 
@@ -118,15 +118,47 @@ int main(int argc, char *argv[])
 
     });
 
+    // adding new user to database route
+    httpServer.route("/new_user", QHttpServerRequest::Method::Post, [databaseDriver](const QHttpServerRequest &request){
+
+        const auto jsonBodyDoc = QJsonDocument::fromJson(request.body());
+
+        if(!jsonBodyDoc.isObject()) {
+
+            return QHttpServerResponse("Invalid", QHttpServerResponder::StatusCode::BadRequest);
+
+        }
+
+        const QJsonObject jsonObj = jsonBodyDoc.object();
+
+        // getting valuse from josn object:
+        const QString login    = jsonObj.value("login").toString();
+        const QString password = jsonObj.value("password").toString();
+        const QString role     = jsonObj.value("role").toString();
+
+        if(databaseDriver == nullptr)
+            return QHttpServerResponse("Internal error: nullptr", QHttpServerResponder::StatusCode::InternalServerError);
+
+        if(!databaseDriver -> connectionOk)
+            return QHttpServerResponse("Internal error: lost DB connection");
+
+        databaseDriver -> addNewUser(login, password, role);
+
+        return QHttpServerResponse("Success", QHttpServerResponder::StatusCode::Ok);
+
+    });
+
     // binding QTcpServer to QHttpServer
     auto tcpServer = std::make_unique<QTcpServer>();
 
-    if(!tcpServer -> listen(QHostAddress::Any, 8080) || !httpServer.bind(tcpServer.get())) {
+    if(!tcpServer -> listen(QHostAddress::Any, 8080)) {
 
         qDebug() << "Failed to start a server";
         return -1;
 
     }
+
+    httpServer.bind(tcpServer.get());
 
     qDebug() << "Server running";
 
@@ -167,10 +199,5 @@ std::shared_ptr<OTP> initOtp(ConfigManager *configManager, QObject &parent) {
     std::shared_ptr<OTP> otpDriver = std::make_shared<OTP>(&parent, configManager);
 
     return otpDriver;
-
-}
-
-void startTcpServer() {
-
 
 }

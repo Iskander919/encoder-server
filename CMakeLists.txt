@@ -18,6 +18,14 @@ add_subdirectory(external/simple-mail)
 
 add_executable(security-server
   main.cpp
+  crypto/grasshopper/src/grasshopper.cpp
+  crypto/grasshopper/inc/grasshopper.h
+  crypto/rsa/bigint/bigint.cpp
+  crypto/rsa/bigint/bigint.h
+  crypto/rsa/rsa/rsa.cpp
+  crypto/rsa/rsa/rsa.h
+  crypto/stribog/src/stribog.cpp
+  crypto/stribog/inc/stribog.h
   database/dbdriver.cpp
   database/dbdriver.h
   configmanager/configmanager.cpp

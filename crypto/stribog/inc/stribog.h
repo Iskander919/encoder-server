@@ -215,6 +215,10 @@ public:
 
 	std::vector<uint8_t> getHash(const std::vector<uint8_t> message);
 
+    uint8_t hex_value(char c);
+
+    std::vector<uint8_t> hex_to_vec8(const std::string &hex);
+
 
 
 

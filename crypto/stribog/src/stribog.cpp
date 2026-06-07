@@ -308,6 +308,31 @@ std::vector<uint8_t> Stribog::getHash(const std::vector<uint8_t> message)
 
 }
 
+uint8_t Stribog::hex_value(char c)
+{
+    if (c >= '0' && c <= '9') return c - '0';
+    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+    throw std::invalid_argument("Invalid hex character");
+}
+
+std::vector<uint8_t> Stribog::hex_to_vec8(const std::string &hex)
+{
+    if (hex.size() % 2 != 0)
+        throw std::invalid_argument("Hex string must have even length");
+
+    std::vector<uint8_t> result;
+    result.reserve(hex.size() / 2);
+
+    for (size_t i = 0; i < hex.size(); i += 2) {
+        uint8_t hi = hex_value(hex[i]);
+        uint8_t lo = hex_value(hex[i + 1]);
+        result.push_back((hi << 4) | lo);
+    }
+
+    return result;
+}
+
 
 
 

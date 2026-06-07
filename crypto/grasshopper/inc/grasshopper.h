@@ -4,6 +4,8 @@
 #include <vector>
 #include <cmath>
 #include <cstdint>
+#include <string>
+#include <stdexcept>
 
 class Grasshopper {
 
@@ -12,11 +14,13 @@ public:
 	Grasshopper();
 
 	//encrypt function
-	std::vector<char> grasshopperEncrypt(std::vector<char> block);
+    std::vector<char> grasshopperEncrypt(std::vector<char> block);
 
 
 	//decrypt function
-	std::vector<char> grasshopperDecrypt(std::vector<char> block);
+    std::vector<char> grasshopperDecrypt(std::vector<char> block);
+
+    std::vector<char> hex_to_vector(const std::string& hex);
 
 private:
 
@@ -151,6 +155,8 @@ private:
 
 	std::vector<char> grasshopperReverseR(const std::vector<char>& in);
 
+    unsigned char hex_value(char c);
+
 };
 // END OF CLASS GRASSHOPPER
 //--------------------------------------------------------------------------------------//
@@ -283,6 +289,7 @@ std::vector<char> grasshopperEncrypt(std::vector<char> bloc, std::vector<std::ve
 std::vector<char> grasshopperDecrypt(std::vector<char> block, std::vector<std::vector<char>> keyChain);
 
 std::vector<char> grasshopperReverseR(const std::vector<char>& in);
+
 
 
 

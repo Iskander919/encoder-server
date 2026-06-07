@@ -11,6 +11,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Concurrent)
 find_package(Qt6 REQUIRED COMPONENTS HttpServer)
 find_package(Qt6 REQUIRED COMPONENTS Sql)
 
@@ -35,11 +36,18 @@ add_executable(security-server
 
 )
 target_link_libraries(security-server PRIVATE Qt6::Core)
+target_link_libraries(security-server PRIVATE Qt6::Concurrent)
 target_link_libraries(security-server PRIVATE Qt6::HttpServer)
 target_link_libraries(security-server PRIVATE Qt6::Sql)
 target_link_libraries(security-server PRIVATE SimpleMail::Core)
 
-target_include_directories(security-server PRIVATE database otp configmanager)
+target_include_directories(security-server PRIVATE
+  database
+  otp
+  configmanager
+  crypto/grasshopper/inc
+  crypto/stribog/inc
+  crypto/rsa/rsa)
 
 include(GNUInstallDirs)
 install(TARGETS security-server
